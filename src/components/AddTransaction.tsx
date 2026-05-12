@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 
 const CATEGORIES = [
   'Serviços','Marketing','Transporte','Alimentação','Equipamento',
@@ -8,6 +9,7 @@ const CATEGORIES = [
 ]
 
 export function AddTransaction() {
+  const router = useRouter()
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
   const [type, setType] = useState<'INCOME' | 'EXPENSE'>('INCOME')
@@ -51,7 +53,7 @@ export function AddTransaction() {
         })
         if (!res.ok) throw new Error((await res.json()).error ?? 'Erro')
         setSuccess(true)
-        setTimeout(() => { setSuccess(false) }, 3000)
+        setTimeout(() => { setSuccess(false); router.refresh() }, 1500)
         setDescription(''); setAmount(''); setAICategory(null)
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Erro')
