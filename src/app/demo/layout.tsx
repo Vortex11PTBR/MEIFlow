@@ -3,9 +3,9 @@ import { DemoNav } from '@/components/demo/DemoNav'
 
 export default function DemoLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-[calc(100vh-56px)]">
+    <div className="flex min-h-screen">
       {/* ── Desktop Sidebar ─────────────────────────────── */}
-      <aside className="hidden md:flex flex-col w-[240px] shrink-0 bg-[#1E3A5F] sticky top-14 h-[calc(100vh-56px)] overflow-y-auto">
+      <aside className="hidden md:flex flex-col w-[240px] shrink-0 bg-[#1E3A5F] sticky top-14 min-h-[calc(100vh-56px)] overflow-y-auto">
         {/* Logo + badge */}
         <div className="px-5 pt-6 pb-4 border-b border-white/10">
           <div className="flex items-center gap-2 mb-3">

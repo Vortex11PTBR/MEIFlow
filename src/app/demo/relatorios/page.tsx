@@ -18,7 +18,7 @@ export default async function RelatoriosPage({ searchParams }: PageProps) {
   } catch {
     return (
       <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-        <p className="text-slate-500 dark:text-slate-400 text-sm">🗄 Banco de dados não configurado.</p>
+        <p className="text-slate-500 dark:text-slate-400 text-sm">Banco de dados não configurado.</p>
       </div>
     )
   }

@@ -8,6 +8,7 @@ interface Transaction {
   category: string
   date: string
   aiCategorized: boolean
+  notes?: string | null
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -33,26 +34,37 @@ export function TransactionList({ transactions }: { transactions: Transaction[] 
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Lançamentos recentes</p>
         <span className="text-xs text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-400/30 bg-blue-50 dark:bg-blue-400/10 px-2 py-0.5 rounded-full">
-          ✦ categorizado por IA
+          IA
         </span>
       </div>
       <div className="space-y-1">
         {transactions.map(tx => (
           <div
             key={tx.id}
-            className="grid grid-cols-[32px_1fr_auto] items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+            className="grid grid-cols-[32px_1fr_auto] items-start gap-3 px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
           >
-            <div
-              className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${
-                tx.type === 'INCOME' ? 'bg-green-100 dark:bg-green-400/10' : 'bg-red-100 dark:bg-red-400/10'
-              }`}
-            >
-              {tx.type === 'INCOME' ? '💰' : '🔴'}
-            </div>
+            {tx.type === 'INCOME' ? (
+              <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-400/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>
+                </svg>
+              </div>
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-400/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+                </svg>
+              </div>
+            )}
             <div>
               <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate max-w-[200px]">{tx.description}</p>
+              {tx.notes && (
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 truncate max-w-[200px]" title={tx.notes}>
+                  {tx.notes}
+                </p>
+              )}
               <div className="flex items-center gap-1.5 mt-0.5">
-                {tx.aiCategorized && <span className="text-[10px] text-blue-600 dark:text-blue-400">AI →</span>}
+                {tx.aiCategorized && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400 shrink-0" />}
                 <span
                   className={`text-[10px] px-1.5 py-0.5 rounded-full border ${
                     CATEGORY_COLORS[tx.category] ?? CATEGORY_COLORS['Outros']

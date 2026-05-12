@@ -16,7 +16,7 @@ export function DASCard() {
     >
       <div>
         <p className={`text-xs font-medium uppercase tracking-wider mb-1 ${urgent ? 'text-amber-600 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'}`}>
-          ⚡ Próximo DAS
+          Próximo DAS
         </p>
         <p className="font-semibold text-slate-900 dark:text-slate-100 mb-1">Documento de Arrecadação do MEI</p>
         <p className="text-sm text-slate-500 dark:text-slate-400">Vencimento: todo dia 20 do mês</p>

@@ -28,7 +28,7 @@ export function LimitBar({ yearIncome, limitPct, limitRemaining }: Props) {
         />
       </div>
       <p className="text-xs text-slate-500 dark:text-slate-400">
-        {pct >= 80 ? '⚠ ' : ''}
+        {pct >= 80 ? 'Atenção: ' : ''}
         {pct.toFixed(1)}% utilizado — {formatCurrency(limitRemaining)} restante.
         {pct >= 80 && ' Considere formalizar como Microempresa.'}
       </p>

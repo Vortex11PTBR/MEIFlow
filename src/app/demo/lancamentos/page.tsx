@@ -31,7 +31,7 @@ export default async function LancamentosPage({ searchParams }: PageProps) {
   if (!tenant) {
     return (
       <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-        <p className="text-slate-500 dark:text-slate-400 text-sm">🗄 Banco de dados não configurado.</p>
+        <p className="text-slate-500 dark:text-slate-400 text-sm">Banco de dados não configurado.</p>
       </div>
     )
   }
@@ -173,15 +173,11 @@ export default async function LancamentosPage({ searchParams }: PageProps) {
                         {tx.type === 'INCOME' ? '+' : '−'}{formatCurrency(tx.amount)}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 max-w-[180px]">
                       {tx.notes ? (
-                        <span title={tx.notes} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-help" aria-label={tx.notes}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                          </svg>
-                        </span>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">{tx.notes}</p>
                       ) : (
-                        <span className="text-slate-300 dark:text-slate-600">—</span>
+                        <span className="text-slate-300 dark:text-slate-600 text-sm">—</span>
                       )}
                     </td>
                   </tr>

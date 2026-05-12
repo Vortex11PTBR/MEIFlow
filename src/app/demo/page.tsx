@@ -17,7 +17,7 @@ export default async function DemoPage() {
   } catch {
     return (
       <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-        <p className="text-slate-500 dark:text-slate-400 text-sm">🗄 Banco de dados não configurado.</p>
+        <p className="text-slate-500 dark:text-slate-400 text-sm">Banco de dados não configurado.</p>
         <p className="text-xs text-slate-400 mt-2">
           Execute: <code className="text-blue-600 dark:text-blue-400 font-mono">npm run db:push && npm run db:seed</code>
         </p>
@@ -135,7 +135,7 @@ export default async function DemoPage() {
       {/* Footer note */}
       <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
         <p className="text-xs text-slate-400 text-center">
-          ✦ Dados de demonstração · Next.js 14 · Prisma · Neon · Claude AI ·{' '}
+          Dados de demonstração · Next.js 14 · Prisma · Neon · Claude AI ·{' '}
           <a href="https://github.com/Vortex11PTBR/MEIFlow" className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
             github.com/Vortex11PTBR/MEIFlow
           </a>
