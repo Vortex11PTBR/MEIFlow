@@ -22,7 +22,7 @@ export function AddTransaction() {
   const [error, setError] = useState<string | null>(null)
 
   const suggestCategory = useCallback(async (desc: string) => {
-    if (desc.length < 5) return
+    if (desc.length < 3) return
     setAILoading(true)
     try {
       const res = await fetch('/api/categorize', {
@@ -53,8 +53,9 @@ export function AddTransaction() {
         })
         if (!res.ok) throw new Error((await res.json()).error ?? 'Erro')
         setSuccess(true)
-        setTimeout(() => { setSuccess(false); router.refresh() }, 1500)
-        setDescription(''); setAmount(''); setAICategory(null)
+        router.refresh()
+        setTimeout(() => setSuccess(false), 2500)
+        setDescription(''); setAmount(''); setAICategory(null); setCategory('')
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Erro')
       }
