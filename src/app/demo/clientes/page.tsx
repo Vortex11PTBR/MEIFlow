@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db'
 import { DEMO_TENANT_CNPJ } from '@/lib/utils'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export default async function ClientesPage() {
   const tenant = await prisma.tenant.findUnique({

@@ -2,7 +2,7 @@ import { getDashboardData } from '@/lib/dashboard'
 import { formatCurrency } from '@/lib/utils'
 import { RevenueChart } from '@/components/dashboard/RevenueChart'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 30
 
 export default async function FluxoCaixaPage() {
   let data

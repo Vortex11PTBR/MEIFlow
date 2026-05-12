@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db'
 import { categorizeTransaction } from '@/lib/categorize'
 import { DEMO_TENANT_CNPJ } from '@/lib/utils'
 import { TransactionType } from '@prisma/client'
+import { revalidateTag } from 'next/cache'
 
 const CreateSchema = z.object({
   description: z.string().min(1).max(255),
@@ -64,5 +65,7 @@ export async function POST(req: NextRequest) {
     },
   })
 
+  revalidateTag('dashboard')
   return NextResponse.json(tx, { status: 201 })
 }
+

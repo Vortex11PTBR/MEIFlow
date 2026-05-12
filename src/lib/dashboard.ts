@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache'
 import { prisma } from './db'
 import { MEI_ANNUAL_LIMIT, DEMO_TENANT_CNPJ } from './utils'
 import { TransactionType } from '@prisma/client'
@@ -12,7 +13,7 @@ export interface DashboardData {
   limitPct: number
   limitRemaining: number
   activeClients: number
-  monthlyBreakdown: { month: string; income: number; expense: number }[]
+  monthlyBreakdown: { month: string; label: string; income: number; expense: number }[]
   weeklyBreakdown: { day: string; income: number; expense: number }[]
   expenseCategories: Record<string, number>
   recentTransactions: {
@@ -27,52 +28,70 @@ export interface DashboardData {
   }[]
 }
 
-export async function getDashboardData(): Promise<DashboardData> {
-  const tenant = await prisma.tenant.findUnique({
-    where: { cnpj: DEMO_TENANT_CNPJ },
-    include: { transactions: { orderBy: { date: 'desc' } } },
-  })
-
-  if (!tenant) throw new Error('Demo tenant not found — run: npm run db:seed')
-
+async function _getDashboardData(): Promise<DashboardData> {
   const now = new Date()
   const year = now.getFullYear()
   const monthStart = new Date(year, now.getMonth(), 1)
   const monthEnd = new Date(year, now.getMonth() + 1, 0, 23, 59, 59)
   const yearStart = new Date(year, 0, 1)
+  // Fetch last 13 months for monthly breakdown
+  const breakdownStart = new Date(year - 1, now.getMonth() + 1, 1)
+  const weekStart = new Date(year, now.getMonth(), now.getDate() - 6)
 
-  const monthTx = tenant.transactions.filter(t => t.date >= monthStart && t.date <= monthEnd)
-  const yearTx = tenant.transactions.filter(t => t.date >= yearStart)
+  const [tenant, monthTx, yearIncomeTx, breakdownTx, weekTx, recentTx, activeClients] =
+    await Promise.all([
+      prisma.tenant.findUnique({ where: { cnpj: DEMO_TENANT_CNPJ }, select: { id: true, razaoSocial: true, nomeFantasia: true, cnpj: true } }),
+      prisma.transaction.findMany({
+        where: { tenant: { cnpj: DEMO_TENANT_CNPJ }, date: { gte: monthStart, lte: monthEnd } },
+        select: { type: true, amount: true, category: true },
+      }),
+      prisma.transaction.findMany({
+        where: { tenant: { cnpj: DEMO_TENANT_CNPJ }, date: { gte: yearStart }, type: TransactionType.INCOME },
+        select: { amount: true },
+      }),
+      prisma.transaction.findMany({
+        where: { tenant: { cnpj: DEMO_TENANT_CNPJ }, date: { gte: breakdownStart, lte: monthEnd } },
+        select: { type: true, amount: true, date: true },
+      }),
+      prisma.transaction.findMany({
+        where: { tenant: { cnpj: DEMO_TENANT_CNPJ }, date: { gte: weekStart } },
+        select: { type: true, amount: true, date: true },
+      }),
+      prisma.transaction.findMany({
+        where: { tenant: { cnpj: DEMO_TENANT_CNPJ } },
+        orderBy: { date: 'desc' },
+        take: 10,
+        select: { id: true, description: true, amount: true, type: true, category: true, date: true, aiCategorized: true, notes: true },
+      }),
+      prisma.client.count({ where: { tenant: { cnpj: DEMO_TENANT_CNPJ } } }),
+    ])
 
-  const monthIncome = monthTx
-    .filter(t => t.type === TransactionType.INCOME)
-    .reduce((s, t) => s + t.amount, 0)
-  const monthExpense = monthTx
-    .filter(t => t.type === TransactionType.EXPENSE)
-    .reduce((s, t) => s + t.amount, 0)
-  const yearIncome = yearTx
-    .filter(t => t.type === TransactionType.INCOME)
-    .reduce((s, t) => s + t.amount, 0)
+  if (!tenant) throw new Error('Demo tenant not found — run: npm run db:seed')
 
-  // Monthly breakdown (last 5 months)
-  const monthlyBreakdown: { month: string; income: number; expense: number }[] = []
-  for (let i = 4; i >= 0; i--) {
+  const monthIncome = monthTx.filter(t => t.type === TransactionType.INCOME).reduce((s, t) => s + t.amount, 0)
+  const monthExpense = monthTx.filter(t => t.type === TransactionType.EXPENSE).reduce((s, t) => s + t.amount, 0)
+  const yearIncome = yearIncomeTx.reduce((s, t) => s + t.amount, 0)
+
+  // Monthly breakdown — last 13 months
+  const monthlyBreakdown: { month: string; label: string; income: number; expense: number }[] = []
+  for (let i = 12; i >= 0; i--) {
     const d = new Date(year, now.getMonth() - i, 1)
     const end = new Date(year, now.getMonth() - i + 1, 0, 23, 59, 59)
-    const txs = tenant.transactions.filter(t => t.date >= d && t.date <= end)
+    const txs = breakdownTx.filter(t => t.date >= d && t.date <= end)
     monthlyBreakdown.push({
       month: d.toLocaleDateString('pt-BR', { month: 'short' }),
+      label: d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }),
       income: txs.filter(t => t.type === TransactionType.INCOME).reduce((s, t) => s + t.amount, 0),
       expense: txs.filter(t => t.type === TransactionType.EXPENSE).reduce((s, t) => s + t.amount, 0),
     })
   }
 
-  // Last 7 days breakdown
+  // Last 7 days
   const weeklyBreakdown: { day: string; income: number; expense: number }[] = []
   for (let i = 6; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i)
+    const d = new Date(year, now.getMonth(), now.getDate() - i)
     const nextDay = new Date(d.getTime() + 86400000)
-    const txs = tenant.transactions.filter(t => t.date >= d && t.date < nextDay)
+    const txs = weekTx.filter(t => t.date >= d && t.date < nextDay)
     weeklyBreakdown.push({
       day: d.toLocaleDateString('pt-BR', { weekday: 'short' }),
       income: txs.filter(t => t.type === TransactionType.INCOME).reduce((s, t) => s + t.amount, 0),
@@ -82,13 +101,9 @@ export async function getDashboardData(): Promise<DashboardData> {
 
   // Expense categories this month
   const expenseCategories: Record<string, number> = {}
-  monthTx
-    .filter(t => t.type === TransactionType.EXPENSE)
-    .forEach(t => {
-      expenseCategories[t.category] = (expenseCategories[t.category] ?? 0) + t.amount
-    })
-
-  const activeClients = await prisma.client.count({ where: { tenantId: tenant.id } })
+  monthTx.filter(t => t.type === TransactionType.EXPENSE).forEach(t => {
+    expenseCategories[t.category] = (expenseCategories[t.category] ?? 0) + t.amount
+  })
 
   return {
     tenantName: tenant.nomeFantasia ?? tenant.razaoSocial,
@@ -103,7 +118,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     monthlyBreakdown,
     weeklyBreakdown,
     expenseCategories,
-    recentTransactions: tenant.transactions.slice(0, 10).map(t => ({
+    recentTransactions: recentTx.map(t => ({
       id: t.id,
       description: t.description,
       amount: t.amount,
@@ -115,3 +130,9 @@ export async function getDashboardData(): Promise<DashboardData> {
     })),
   }
 }
+
+export const getDashboardData = unstable_cache(
+  _getDashboardData,
+  ['dashboard-data'],
+  { revalidate: 30, tags: ['dashboard'] }
+)

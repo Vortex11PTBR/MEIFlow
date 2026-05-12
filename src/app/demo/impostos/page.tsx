@@ -1,6 +1,6 @@
 import { calcDASCountdown, formatCurrency } from '@/lib/utils'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
 const DAS_VALUE = 75.90
 

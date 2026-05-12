@@ -5,7 +5,7 @@ import { LineChart } from '@/components/dashboard/LineChart'
 import { formatCurrency } from '@/lib/utils'
 import Link from 'next/link'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 30
 
 interface PageProps {
   searchParams?: { period?: string }
