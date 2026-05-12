@@ -14,6 +14,7 @@ const CreateSchema = z.object({
   category: z.string().optional(),
   date: z.string().optional(),
   clientId: z.string().optional(),
+  notes: z.string().optional(),
 })
 
 export async function GET(req: NextRequest) {
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
   const parsed = CreateSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
 
-  const { description, amount, type, date, clientId, category: userCategory } = parsed.data
+  const { description, amount, type, date, clientId, category: userCategory, notes } = parsed.data
   const tenant = await prisma.tenant.findUnique({ where: { cnpj: DEMO_TENANT_CNPJ } })
   if (!tenant) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 })
 
@@ -58,6 +59,7 @@ export async function POST(req: NextRequest) {
       category,
       date: date ? new Date(date) : new Date(),
       clientId: clientId ?? null,
+      notes: notes ?? null,
       aiCategorized: true,
     },
   })

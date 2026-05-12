@@ -32,6 +32,7 @@ model Transaction {
   type        TransactionType
   category    String
   date        DateTime
+  notes       String?
   clientId    String?
   aiCategorized Boolean       @default(false)
   createdAt   DateTime        @default(now())

@@ -13,6 +13,7 @@ export interface DashboardData {
   limitRemaining: number
   activeClients: number
   monthlyBreakdown: { month: string; income: number; expense: number }[]
+  weeklyBreakdown: { day: string; income: number; expense: number }[]
   expenseCategories: Record<string, number>
   recentTransactions: {
     id: string
@@ -22,6 +23,7 @@ export interface DashboardData {
     category: string
     date: string
     aiCategorized: boolean
+    notes: string | null
   }[]
 }
 
@@ -65,6 +67,19 @@ export async function getDashboardData(): Promise<DashboardData> {
     })
   }
 
+  // Last 7 days breakdown
+  const weeklyBreakdown: { day: string; income: number; expense: number }[] = []
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i)
+    const nextDay = new Date(d.getTime() + 86400000)
+    const txs = tenant.transactions.filter(t => t.date >= d && t.date < nextDay)
+    weeklyBreakdown.push({
+      day: d.toLocaleDateString('pt-BR', { weekday: 'short' }),
+      income: txs.filter(t => t.type === TransactionType.INCOME).reduce((s, t) => s + t.amount, 0),
+      expense: txs.filter(t => t.type === TransactionType.EXPENSE).reduce((s, t) => s + t.amount, 0),
+    })
+  }
+
   // Expense categories this month
   const expenseCategories: Record<string, number> = {}
   monthTx
@@ -86,6 +101,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     limitRemaining: MEI_ANNUAL_LIMIT - yearIncome,
     activeClients,
     monthlyBreakdown,
+    weeklyBreakdown,
     expenseCategories,
     recentTransactions: tenant.transactions.slice(0, 10).map(t => ({
       id: t.id,
@@ -95,6 +111,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       category: t.category,
       date: t.date.toISOString(),
       aiCategorized: t.aiCategorized,
+      notes: t.notes,
     })),
   }
 }
