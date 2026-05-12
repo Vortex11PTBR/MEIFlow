@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
+}
+
+model Tenant {
+  id           String        @id @default(cuid())
+  cnpj         String        @unique
+  razaoSocial  String
+  nomeFantasia String?
+  email        String
+  isDemo       Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  transactions Transaction[]
+  clients      Client[]
+
+  @@map("tenants")
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  tenantId    String
+  description String
+  amount      Float
+  type        TransactionType
+  category    String
+  date        DateTime
+  clientId    String?
+  aiCategorized Boolean       @default(false)
+  createdAt   DateTime        @default(now())
+  tenant      Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  client      Client?         @relation(fields: [clientId], references: [id])
+
+  @@index([tenantId, date])
+  @@map("transactions")
+}
+
+model Client {
+  id           String        @id @default(cuid())
+  tenantId     String
+  cnpj         String?
+  name         String
+  email        String?
+  phone        String?
+  createdAt    DateTime      @default(now())
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([tenantId])
+  @@map("clients")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
