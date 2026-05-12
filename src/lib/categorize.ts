@@ -11,7 +11,9 @@ const CATEGORIES = [
   'Infraestrutura',
   'Escritório',
   'Impostos',
+  'Manutenção',
   'Treinamento',
+  'Saúde',
   'Outros',
 ] as const
 
@@ -47,16 +49,18 @@ Transação: "${description}"`,
 
 function heuristicCategorize(desc: string): Category {
   const d = desc.toLowerCase()
-  if (d.match(/uber|taxi|combustivel|gasolina|estacionamento|viagem|ônibus/)) return 'Transporte'
-  if (d.match(/almoço|jantar|café|restaurante|lanche|refeição/)) return 'Alimentação'
-  if (d.match(/google ads|meta ads|instagram|facebook|marketing|publicidade|campanha/)) return 'Marketing'
-  if (d.match(/curso|treinamento|livro|workshop|bootcamp|educação|estudo/)) return 'Educação'
-  if (d.match(/monitor|teclado|mouse|notebook|computador|equipamento|hardware/)) return 'Equipamento'
-  if (d.match(/saas|software|ferramenta|assinatura|vscode|figma|notion|slack/)) return 'Ferramentas'
-  if (d.match(/hospedagem|servidor|cloud|aws|gcp|azure|domínio|infra/)) return 'Infraestrutura'
-  if (d.match(/das|imposto|inss|irpf|guia|tributo|taxa/)) return 'Impostos'
-  if (d.match(/papel|caneta|material|escritório|impressora/)) return 'Escritório'
-  if (d.match(/consultoria|desenvolvimento|sistema|api|app|site|software|manutenção|integração/)) return 'Serviços'
+  if (d.match(/uber|taxi|combustivel|gasolina|estacionamento|viagem|ônibus|carro|moto|oficina|borracharia|mecânico|lavagem|km|pedagio/)) return 'Transporte'
+  if (d.match(/almoço|jantar|café|restaurante|lanche|refeição|pizza|hamburguer|delivery|ifood|rappi|sushi|churrasco|mercado|supermercado|feira|padaria|snack/)) return 'Alimentação'
+  if (d.match(/google ads|meta ads|instagram|facebook|marketing|publicidade|campanha|anuncio|ads|trafego/)) return 'Marketing'
+  if (d.match(/curso|treinamento|livro|workshop|bootcamp|educação|estudo|udemy|alura|dio|coursera|mentoria/)) return 'Educação'
+  if (d.match(/monitor|teclado|mouse|notebook|computador|equipamento|hardware|impressora|scanner|camera|microfone|headset/)) return 'Equipamento'
+  if (d.match(/saas|software|ferramenta|assinatura|vscode|figma|notion|slack|github|linear|jira|adobe|canva|chatgpt|openai/)) return 'Ferramentas'
+  if (d.match(/hospedagem|servidor|cloud|aws|gcp|azure|domínio|infra|vps|cdn|cloudflare|vercel|railway|neon/)) return 'Infraestrutura'
+  if (d.match(/das|imposto|inss|irpf|guia|tributo|taxa|multa|receita federal/)) return 'Impostos'
+  if (d.match(/papel|caneta|material|escritório|impressão|cartuchos|toner|organizador/)) return 'Escritório'
+  if (d.match(/limpeza|limpar|faxina|diarista|lavanderia|higiene|dedetização|jardinagem|pintura|reforma|conserto|reparo|manutenção|eletricista|encanador/)) return 'Manutenção'
+  if (d.match(/médico|dentista|farmácia|remédio|saúde|plano de saúde|exame|hospital|clinica|consulta/)) return 'Saúde'
+  if (d.match(/consultoria|desenvolvimento|sistema|api|app|site|website|manutenção|integração|freelance|projeto/)) return 'Serviços'
   if (d.match(/treinamento|capacitação/)) return 'Treinamento'
   return 'Outros'
 }

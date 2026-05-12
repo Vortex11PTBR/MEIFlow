@@ -6,6 +6,7 @@ import { TransactionList } from '@/components/dashboard/TransactionList'
 import { RevenueChart } from '@/components/dashboard/RevenueChart'
 import { ExpenseChart } from '@/components/dashboard/ExpenseChart'
 import { AddTransaction } from '@/components/AddTransaction'
+import { ExportButton } from '@/components/ExportButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -52,8 +53,9 @@ export default async function DemoPage() {
             CNPJ {data.tenantCNPJ.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
           </p>
         </div>
-        <div className="font-mono text-[11px] text-slate-600 border border-white/[0.06] bg-white/[0.02] rounded-lg px-3 py-2">
-          Dados de demonstração · tenant isDemo
+        <div className="font-mono text-[11px] text-slate-600 border border-white/[0.06] bg-white/[0.02] rounded-lg px-3 py-2 flex items-center gap-3">
+          <ExportButton transactions={data.recentTransactions} />
+          <span>Dados de demonstração · tenant isDemo</span>
         </div>
       </div>
 
