@@ -40,6 +40,7 @@ model Transaction {
   client      Client?         @relation(fields: [clientId], references: [id])
 
   @@index([tenantId, date])
+  @@index([tenantId, type, date])
   @@map("transactions")
 }
 

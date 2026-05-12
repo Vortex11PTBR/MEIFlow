@@ -34,76 +34,123 @@ async function _getDashboardData(): Promise<DashboardData> {
   const monthStart = new Date(year, now.getMonth(), 1)
   const monthEnd = new Date(year, now.getMonth() + 1, 0, 23, 59, 59)
   const yearStart = new Date(year, 0, 1)
-  // Fetch last 13 months for monthly breakdown
-  const breakdownStart = new Date(year - 1, now.getMonth() + 1, 1)
+  const breakdownStart = new Date(year - 1, now.getMonth() + 1, 1) // 13 months back
   const weekStart = new Date(year, now.getMonth(), now.getDate() - 6)
+  weekStart.setHours(0, 0, 0, 0)
 
-  const [tenant, monthTx, yearIncomeTx, breakdownTx, weekTx, recentTx, activeClients] =
-    await Promise.all([
-      prisma.tenant.findUnique({ where: { cnpj: DEMO_TENANT_CNPJ }, select: { id: true, razaoSocial: true, nomeFantasia: true, cnpj: true } }),
-      prisma.transaction.findMany({
-        where: { tenant: { cnpj: DEMO_TENANT_CNPJ }, date: { gte: monthStart, lte: monthEnd } },
-        select: { type: true, amount: true, category: true },
-      }),
-      prisma.transaction.findMany({
-        where: { tenant: { cnpj: DEMO_TENANT_CNPJ }, date: { gte: yearStart }, type: TransactionType.INCOME },
-        select: { amount: true },
-      }),
-      prisma.transaction.findMany({
-        where: { tenant: { cnpj: DEMO_TENANT_CNPJ }, date: { gte: breakdownStart, lte: monthEnd } },
-        select: { type: true, amount: true, date: true },
-      }),
-      prisma.transaction.findMany({
-        where: { tenant: { cnpj: DEMO_TENANT_CNPJ }, date: { gte: weekStart } },
-        select: { type: true, amount: true, date: true },
-      }),
-      prisma.transaction.findMany({
-        where: { tenant: { cnpj: DEMO_TENANT_CNPJ } },
-        orderBy: { date: 'desc' },
-        take: 10,
-        select: { id: true, description: true, amount: true, type: true, category: true, date: true, aiCategorized: true, notes: true },
-      }),
-      prisma.client.count({ where: { tenant: { cnpj: DEMO_TENANT_CNPJ } } }),
-    ])
+  // All queries run in parallel — single DB round trip
+  const [
+    tenant,
+    monthByTypeAndCategory, // groupBy(type, category) in month → derives income, expense, categories
+    yearIncomeAgg,
+    monthlyRaw,             // raw SQL: DATE_TRUNC month + type
+    weeklyRaw,              // raw SQL: DATE_TRUNC day + type
+    recentTx,
+    activeClients,
+  ] = await Promise.all([
+    prisma.tenant.findUnique({
+      where: { cnpj: DEMO_TENANT_CNPJ },
+      select: { id: true, razaoSocial: true, nomeFantasia: true, cnpj: true },
+    }),
+    // One groupBy replaces 3 queries (monthIncome, monthExpense, expenseCategories)
+    prisma.transaction.groupBy({
+      by: ['type', 'category'],
+      where: { tenant: { cnpj: DEMO_TENANT_CNPJ }, date: { gte: monthStart, lte: monthEnd } },
+      _sum: { amount: true },
+    }),
+    // Year income aggregate (DB-level SUM, no rows transferred)
+    prisma.transaction.aggregate({
+      where: { tenant: { cnpj: DEMO_TENANT_CNPJ }, date: { gte: yearStart }, type: TransactionType.INCOME },
+      _sum: { amount: true },
+    }),
+    // Monthly breakdown — DB GROUP BY month+type, returns max 26 rows instead of all transactions
+    prisma.$queryRaw<{ month: Date; type: string; total: number }[]>`
+      SELECT
+        DATE_TRUNC('month', date) AS month,
+        type,
+        SUM(amount)::float8       AS total
+      FROM transactions
+      WHERE "tenantId" = (SELECT id FROM tenants WHERE cnpj = ${DEMO_TENANT_CNPJ})
+        AND date >= ${breakdownStart}
+        AND date <= ${monthEnd}
+      GROUP BY DATE_TRUNC('month', date), type
+      ORDER BY month
+    `,
+    // Weekly breakdown — DB GROUP BY day+type, returns max 14 rows
+    prisma.$queryRaw<{ day: Date; type: string; total: number }[]>`
+      SELECT
+        DATE_TRUNC('day', date) AS day,
+        type,
+        SUM(amount)::float8     AS total
+      FROM transactions
+      WHERE "tenantId" = (SELECT id FROM tenants WHERE cnpj = ${DEMO_TENANT_CNPJ})
+        AND date >= ${weekStart}
+      GROUP BY DATE_TRUNC('day', date), type
+      ORDER BY day
+    `,
+    // Recent 10 transactions — only needed fields
+    prisma.transaction.findMany({
+      where: { tenant: { cnpj: DEMO_TENANT_CNPJ } },
+      orderBy: { date: 'desc' },
+      take: 10,
+      select: { id: true, description: true, amount: true, type: true, category: true, date: true, aiCategorized: true, notes: true },
+    }),
+    prisma.client.count({ where: { tenant: { cnpj: DEMO_TENANT_CNPJ } } }),
+  ])
 
   if (!tenant) throw new Error('Demo tenant not found — run: npm run db:seed')
 
-  const monthIncome = monthTx.filter(t => t.type === TransactionType.INCOME).reduce((s, t) => s + t.amount, 0)
-  const monthExpense = monthTx.filter(t => t.type === TransactionType.EXPENSE).reduce((s, t) => s + t.amount, 0)
-  const yearIncome = yearIncomeTx.reduce((s, t) => s + t.amount, 0)
+  // Derive month income, expense, and categories from the single groupBy result
+  let monthIncome = 0
+  let monthExpense = 0
+  const expenseCategories: Record<string, number> = {}
 
-  // Monthly breakdown — last 13 months
+  for (const row of monthByTypeAndCategory) {
+    const amt = Number(row._sum.amount ?? 0)
+    if (row.type === TransactionType.INCOME) {
+      monthIncome += amt
+    } else {
+      monthExpense += amt
+      expenseCategories[row.category] = (expenseCategories[row.category] ?? 0) + amt
+    }
+  }
+
+  const yearIncome = Number(yearIncomeAgg._sum.amount ?? 0)
+
+  // Build 13-month breakdown from raw SQL results
   const monthlyBreakdown: { month: string; label: string; income: number; expense: number }[] = []
   for (let i = 12; i >= 0; i--) {
     const d = new Date(year, now.getMonth() - i, 1)
-    const end = new Date(year, now.getMonth() - i + 1, 0, 23, 59, 59)
-    const txs = breakdownTx.filter(t => t.date >= d && t.date <= end)
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const incRow = monthlyRaw.find(r => {
+      const rd = new Date(r.month)
+      return `${rd.getFullYear()}-${String(rd.getMonth() + 1).padStart(2, '0')}` === key && r.type === 'INCOME'
+    })
+    const expRow = monthlyRaw.find(r => {
+      const rd = new Date(r.month)
+      return `${rd.getFullYear()}-${String(rd.getMonth() + 1).padStart(2, '0')}` === key && r.type === 'EXPENSE'
+    })
     monthlyBreakdown.push({
       month: d.toLocaleDateString('pt-BR', { month: 'short' }),
       label: d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }),
-      income: txs.filter(t => t.type === TransactionType.INCOME).reduce((s, t) => s + t.amount, 0),
-      expense: txs.filter(t => t.type === TransactionType.EXPENSE).reduce((s, t) => s + t.amount, 0),
+      income: Number(incRow?.total ?? 0),
+      expense: Number(expRow?.total ?? 0),
     })
   }
 
-  // Last 7 days
+  // Build 7-day breakdown from raw SQL results
   const weeklyBreakdown: { day: string; income: number; expense: number }[] = []
   for (let i = 6; i >= 0; i--) {
     const d = new Date(year, now.getMonth(), now.getDate() - i)
-    const nextDay = new Date(d.getTime() + 86400000)
-    const txs = weekTx.filter(t => t.date >= d && t.date < nextDay)
+    const key = d.toISOString().slice(0, 10)
+    const incRow = weeklyRaw.find(r => new Date(r.day).toISOString().slice(0, 10) === key && r.type === 'INCOME')
+    const expRow = weeklyRaw.find(r => new Date(r.day).toISOString().slice(0, 10) === key && r.type === 'EXPENSE')
     weeklyBreakdown.push({
       day: d.toLocaleDateString('pt-BR', { weekday: 'short' }),
-      income: txs.filter(t => t.type === TransactionType.INCOME).reduce((s, t) => s + t.amount, 0),
-      expense: txs.filter(t => t.type === TransactionType.EXPENSE).reduce((s, t) => s + t.amount, 0),
+      income: Number(incRow?.total ?? 0),
+      expense: Number(expRow?.total ?? 0),
     })
   }
-
-  // Expense categories this month
-  const expenseCategories: Record<string, number> = {}
-  monthTx.filter(t => t.type === TransactionType.EXPENSE).forEach(t => {
-    expenseCategories[t.category] = (expenseCategories[t.category] ?? 0) + t.amount
-  })
 
   return {
     tenantName: tenant.nomeFantasia ?? tenant.razaoSocial,

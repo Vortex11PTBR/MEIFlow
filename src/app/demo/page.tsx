@@ -8,7 +8,7 @@ import { AddTransaction } from '@/components/AddTransaction'
 import { ExportButton } from '@/components/ExportButton'
 import { formatCurrency } from '@/lib/utils'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 30
 
 export default async function DemoPage() {
   let data
