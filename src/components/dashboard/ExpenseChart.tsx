@@ -4,13 +4,13 @@ import { useEffect, useRef } from 'react'
 import Chart from 'chart.js/auto'
 
 const COLORS = [
-  'rgba(0,212,255,0.75)',
+  'rgba(37,99,235,0.75)',
   'rgba(139,92,246,0.75)',
-  'rgba(16,185,129,0.75)',
-  'rgba(245,158,11,0.75)',
-  'rgba(56,189,248,0.75)',
-  'rgba(244,114,182,0.75)',
-  'rgba(251,146,60,0.75)',
+  'rgba(22,163,74,0.75)',
+  'rgba(217,119,6,0.75)',
+  'rgba(14,165,233,0.75)',
+  'rgba(236,72,153,0.75)',
+  'rgba(234,88,12,0.75)',
 ]
 
 export function ExpenseChart({ data }: { data: Record<string, number> }) {
@@ -29,8 +29,8 @@ export function ExpenseChart({ data }: { data: Record<string, number> }) {
         datasets: [{
           data: values,
           backgroundColor: COLORS.slice(0, labels.length),
-          borderColor: '#080c18',
-          borderWidth: 3,
+          borderColor: 'rgba(255,255,255,0.8)',
+          borderWidth: 2,
           hoverOffset: 8,
         }],
       },
@@ -40,7 +40,7 @@ export function ExpenseChart({ data }: { data: Record<string, number> }) {
         plugins: {
           legend: {
             position: 'right',
-            labels: { color: '#94a3b8', font: { family: 'monospace', size: 9 }, boxWidth: 10, padding: 8 },
+            labels: { color: '#64748b', font: { family: 'system-ui', size: 10 }, boxWidth: 10, padding: 8 },
           },
           tooltip: {
             callbacks: {

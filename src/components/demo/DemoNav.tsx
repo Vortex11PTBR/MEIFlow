@@ -56,11 +56,11 @@ export function DemoNav({ mobile = false }: { mobile?: boolean }) {
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center gap-1 transition-colors ${
-                isActive ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'
+                isActive ? 'text-white' : 'text-blue-200/60 hover:text-blue-100'
               }`}
             >
               {item.icon}
-              <span className="font-mono text-[9px] uppercase tracking-wider">{item.label}</span>
+              <span className="text-[10px] font-medium">{item.label}</span>
             </Link>
           )
         })}
@@ -76,10 +76,10 @@ export function DemoNav({ mobile = false }: { mobile?: boolean }) {
           <Link
             key={item.href}
             href={item.href}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all font-mono text-sm ${
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm font-medium ${
               isActive
-                ? 'bg-cyan-400/10 text-cyan-400 border border-cyan-400/20'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
+                ? 'bg-white/10 text-white border border-white/20'
+                : 'text-blue-100/70 hover:text-white hover:bg-white/5'
             }`}
           >
             {item.icon}

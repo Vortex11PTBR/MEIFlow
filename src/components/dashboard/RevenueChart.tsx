@@ -24,16 +24,16 @@ export function RevenueChart({ data }: { data: MonthData[] }) {
           {
             label: 'Receita',
             data: data.map(d => d.income),
-            backgroundColor: 'rgba(0,212,255,0.25)',
-            borderColor: '#00d4ff',
+            backgroundColor: 'rgba(22,163,74,0.20)',
+            borderColor: '#16A34A',
             borderWidth: 2,
             borderRadius: 6,
           },
           {
             label: 'Despesa',
             data: data.map(d => d.expense),
-            backgroundColor: 'rgba(239,68,68,0.20)',
-            borderColor: '#ef4444',
+            backgroundColor: 'rgba(220,38,38,0.15)',
+            borderColor: '#DC2626',
             borderWidth: 2,
             borderRadius: 6,
           },
@@ -44,7 +44,7 @@ export function RevenueChart({ data }: { data: MonthData[] }) {
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            labels: { color: '#94a3b8', font: { family: 'monospace', size: 10 } },
+            labels: { color: '#64748b', font: { family: 'system-ui', size: 11 } },
           },
           tooltip: {
             callbacks: {
@@ -54,9 +54,9 @@ export function RevenueChart({ data }: { data: MonthData[] }) {
           },
         },
         scales: {
-          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { size: 11 } } },
+          x: { grid: { color: 'rgba(100,116,139,0.1)' }, ticks: { color: '#64748b', font: { size: 11 } } },
           y: {
-            grid: { color: 'rgba(255,255,255,0.04)' },
+            grid: { color: 'rgba(100,116,139,0.1)' },
             ticks: {
               color: '#64748b',
               font: { size: 10 },

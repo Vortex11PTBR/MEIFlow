@@ -39,22 +39,22 @@ export function LineChart({ data }: { data: DataPoint[] }) {
           {
             label: 'Receita',
             data: data.map(d => d.income),
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16,185,129,0.08)',
+            borderColor: '#16A34A',
+            backgroundColor: 'rgba(22,163,74,0.08)',
             fill: true,
             tension: 0.4,
-            pointBackgroundColor: '#10b981',
+            pointBackgroundColor: '#16A34A',
             pointRadius: 4,
             pointHoverRadius: 6,
           },
           {
             label: 'Despesa',
             data: data.map(d => d.expense),
-            borderColor: '#ef4444',
-            backgroundColor: 'rgba(239,68,68,0.06)',
+            borderColor: '#DC2626',
+            backgroundColor: 'rgba(220,38,38,0.06)',
             fill: true,
             tension: 0.4,
-            pointBackgroundColor: '#ef4444',
+            pointBackgroundColor: '#DC2626',
             pointRadius: 4,
             pointHoverRadius: 6,
           },
@@ -66,8 +66,8 @@ export function LineChart({ data }: { data: DataPoint[] }) {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#080c18',
-            borderColor: 'rgba(255,255,255,0.08)',
+            backgroundColor: '#1E293B',
+            borderColor: 'rgba(255,255,255,0.1)',
             borderWidth: 1,
             titleColor: '#94a3b8',
             bodyColor: '#e2e8f0',
@@ -82,11 +82,11 @@ export function LineChart({ data }: { data: DataPoint[] }) {
         },
         scales: {
           x: {
-            grid: { color: 'rgba(255,255,255,0.04)' },
+            grid: { color: 'rgba(100,116,139,0.1)' },
             ticks: { color: '#64748b', font: { size: 11 } },
           },
           y: {
-            grid: { color: 'rgba(255,255,255,0.04)' },
+            grid: { color: 'rgba(100,116,139,0.1)' },
             ticks: {
               color: '#64748b',
               font: { size: 10 },

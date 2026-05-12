@@ -35,7 +35,7 @@ export function ExportButton({ transactions }: { transactions: Transaction[] }) 
   return (
     <button
       onClick={exportCSV}
-      className="flex items-center gap-1.5 font-mono text-[11px] text-slate-400 hover:text-cyan-400 border border-white/[0.07] hover:border-cyan-400/30 px-3 py-1.5 rounded-lg transition-all"
+      className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-400/30 px-3 py-1.5 rounded-lg transition-all bg-white dark:bg-slate-800"
     >
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
