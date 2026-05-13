@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     const businessName = tenant.nomeFantasia ?? tenant.razaoSocial
     const resend = new Resend(process.env.RESEND_API_KEY)
     await resend.emails.send({
-      from: process.env.RESEND_FROM ?? 'MEIFlow <onboarding@resend.dev>',
+      from: process.env.RESEND_FROM ?? 'MEIFlow <noreply@joaolacerda.dev>',
       to: email,
       subject: `Você foi cadastrado como cliente de ${businessName}`,
       html: `

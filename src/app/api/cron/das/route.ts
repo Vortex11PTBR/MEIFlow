@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
   for (const t of tenants) {
     const name = t.nomeFantasia ?? t.razaoSocial
     await resend.emails.send({
-      from: process.env.RESEND_FROM ?? 'MEIFlow <noreply@meiflow.app>',
+      from: process.env.RESEND_FROM ?? 'MEIFlow <noreply@joaolacerda.dev>',
       to: t.email,
       subject: `⚡ DAS vence em ${daysLeft} dia${daysLeft !== 1 ? 's' : ''} — não deixe multar!`,
       html: `
