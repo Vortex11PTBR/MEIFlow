@@ -42,10 +42,10 @@ export async function POST(req: NextRequest) {
     }),
   ])
 
-  if (email && process.env.RESEND_API_KEY && tenant) {
+  if (email && tenant) {
     const businessName = tenant.nomeFantasia ?? tenant.razaoSocial
     const resend = new Resend(process.env.RESEND_API_KEY)
-    await resend.emails.send({
+    const emailResult = await resend.emails.send({
       from: process.env.RESEND_FROM ?? 'MEIFlow <noreply@joaolacerda.dev>',
       to: email,
       subject: `Você foi cadastrado como cliente de ${businessName}`,
@@ -79,6 +79,7 @@ export async function POST(req: NextRequest) {
         </div>
       `,
     }).catch(() => {})
+    console.log('[clients] email result:', JSON.stringify(emailResult))
   }
 
   return NextResponse.json(client, { status: 201 })
