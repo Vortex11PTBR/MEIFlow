@@ -58,12 +58,12 @@ export function CNPJLookup() {
           maxLength={18}
           onChange={e => setValue(formatCNPJInput(e.target.value))}
           onKeyDown={e => e.key === 'Enter' && lookup()}
-          className="flex-1 bg-bg-3 border border-white/[0.07] focus:border-cyan/40 focus:ring-1 focus:ring-cyan/20 rounded-lg px-4 py-3 font-mono text-sm text-slate-100 placeholder:text-slate-600 outline-none transition-all"
+          className="flex-1 bg-slate-800 border border-slate-600 focus:border-cyan-400/60 focus:ring-1 focus:ring-cyan-400/20 rounded-lg px-4 py-3 font-mono text-sm text-slate-100 placeholder:text-slate-500 outline-none transition-all"
         />
         <button
           onClick={lookup}
           disabled={loading}
-          className="bg-cyan-400 text-bg font-mono font-semibold text-sm px-6 py-3 rounded-lg hover:shadow-[0_0_24px_rgba(0,212,255,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+          className="bg-cyan-400 text-slate-950 font-mono font-semibold text-sm px-6 py-3 rounded-lg hover:shadow-[0_0_24px_rgba(0,212,255,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
         >
           {loading ? 'Consultando...' : 'Consultar Receita Federal →'}
         </button>

@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans antialiased">
         <ThemeProvider>
           <SessionProvider>
-            <nav className="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl">
+            <nav className="sticky top-0 z-50 border-b border-slate-200/60 dark:border-slate-700/60 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl">
               <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
                 <a href="/" className="flex items-center gap-2">
                   <span className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">

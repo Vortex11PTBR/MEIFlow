@@ -79,6 +79,7 @@ const TECH = [
 
 export default function HomePage() {
   return (
+    <div className="bg-slate-950">
     <main className="max-w-6xl mx-auto px-6">
       <section className="py-24 text-center">
         <div className="inline-flex items-center gap-2 font-mono text-xs text-cyan-400 border border-cyan-400/25 bg-cyan-400/5 px-4 py-1.5 rounded-full mb-8">
@@ -98,7 +99,7 @@ export default function HomePage() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <a
             href="/auth/cadastro"
-            className="bg-cyan-400 text-bg font-mono font-bold px-8 py-4 rounded-xl text-sm hover:shadow-[0_0_32px_rgba(0,212,255,0.4)] transition-all"
+            className="bg-cyan-400 text-slate-950 font-mono font-bold px-8 py-4 rounded-xl text-sm hover:shadow-[0_0_32px_rgba(0,212,255,0.4)] transition-all"
           >
             Criar conta grátis →
           </a>
@@ -165,7 +166,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
               href="/auth/cadastro"
-              className="inline-block bg-cyan-400 text-bg font-mono font-bold px-8 py-4 rounded-xl text-sm hover:shadow-[0_0_32px_rgba(0,212,255,0.4)] transition-all"
+              className="inline-block bg-cyan-400 text-slate-950 font-mono font-bold px-8 py-4 rounded-xl text-sm hover:shadow-[0_0_32px_rgba(0,212,255,0.4)] transition-all"
             >
               Criar conta grátis →
             </a>
@@ -178,12 +179,13 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      <footer className="border-t border-slate-200 dark:border-slate-800 py-8 mt-20">
+      <footer className="border-t border-slate-800 py-8 mt-20">
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-sm text-slate-500">MEIFlow by <a href="https://joaolacerda.dev" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">João Lacerda</a></p>
+          <p className="text-sm text-slate-500">MEIFlow by <a href="https://joaolacerda.dev" className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">João Lacerda</a></p>
           <p className="text-sm text-slate-400">Next.js · Prisma · Neon · IA · Receita Federal</p>
         </div>
       </footer>
     </main>
+    </div>
   )
 }
