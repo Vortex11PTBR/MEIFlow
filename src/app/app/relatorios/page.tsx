@@ -1,9 +1,13 @@
 import Link from 'next/link'
+import { getServerSession } from 'next-auth'
+import { redirect } from 'next/navigation'
 import { ExpenseChart } from '@/components/dashboard/ExpenseChart'
 import { LimitBar } from '@/components/dashboard/LimitBar'
 import { LineChart } from '@/components/dashboard/LineChart'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 import { getDashboardData } from '@/lib/dashboard'
-import { DEMO_TENANT_CNPJ, formatCurrency } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 
 export const revalidate = 30
 
@@ -12,17 +16,17 @@ interface PageProps {
 }
 
 export default async function RelatoriosPage({ searchParams }: PageProps) {
-  let data
-  try {
-    data = await getDashboardData(DEMO_TENANT_CNPJ)
-  } catch {
-    return (
-      <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-        <p className="text-slate-500 dark:text-slate-400 text-sm">Banco de dados não configurado.</p>
-      </div>
-    )
-  }
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.tenantId) redirect('/onboarding')
 
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: session.user.tenantId },
+    select: { cnpj: true },
+  })
+
+  if (!tenant) redirect('/onboarding')
+
+  const data = await getDashboardData(tenant.cnpj)
   const period = searchParams?.period ?? 'month'
   const chartData = period === 'week' ? data.weeklyBreakdown : data.monthlyBreakdown
 
@@ -45,7 +49,7 @@ export default async function RelatoriosPage({ searchParams }: PageProps) {
         {(['week', 'month'] as const).map(p => (
           <Link
             key={p}
-            href={`/demo/relatorios?period=${p}`}
+            href={`/app/relatorios?period=${p}`}
             className={`text-xs px-4 py-2 rounded-lg border transition-all font-medium ${
               period === p
                 ? 'bg-blue-50 dark:bg-blue-400/10 border-blue-300 dark:border-blue-400/30 text-blue-700 dark:text-blue-400'

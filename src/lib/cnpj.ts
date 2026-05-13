@@ -17,33 +17,34 @@ export async function lookupCNPJ(cnpj: string): Promise<CNPJData> {
   const clean = cnpj.replace(/\D/g, '')
   if (clean.length !== 14) throw new Error('CNPJ inválido')
 
-  const res = await fetch(`https://publica.cnpj.ws/cnpj/${clean}`, {
-    next: { revalidate: 3600 }, // cache 1h
-    headers: { Accept: 'application/json' },
+  const res = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${clean}`, {
+    next: { revalidate: 3600 },
+    headers: {
+      Accept: 'application/json',
+      'User-Agent': 'MEIFlow/1.0',
+    },
   })
 
-  if (res.status === 404) throw new Error('CNPJ não encontrado na Receita Federal')
-  if (res.status === 429) throw new Error('Limite de consultas atingido. Tente novamente em alguns segundos.')
+  if (res.status === 404) throw new Error('CNPJ não encontrado')
   if (!res.ok) throw new Error('Erro ao consultar a Receita Federal')
 
-  const d = await res.json()
-
-  const abertura = d.estabelecimento?.data_inicio_atividade
-    ? new Date(d.estabelecimento.data_inicio_atividade).toLocaleDateString('pt-BR')
+  const data = await res.json()
+  const abertura = data.data_inicio_atividade
+    ? new Date(data.data_inicio_atividade).toLocaleDateString('pt-BR')
     : null
 
   return {
-    cnpj: clean,
-    razaoSocial: d.razao_social ?? '—',
-    nomeFantasia: d.estabelecimento?.nome_fantasia ?? null,
-    situacao: d.estabelecimento?.situacao_cadastral ?? '—',
-    ativa: (d.estabelecimento?.situacao_cadastral ?? '').toLowerCase().includes('ativa'),
+    cnpj: data.cnpj ?? clean,
+    razaoSocial: data.razao_social ?? '—',
+    nomeFantasia: data.nome_fantasia || null,
+    situacao: data.descricao_situacao_cadastral ?? '—',
+    ativa: data.descricao_situacao_cadastral === 'ATIVA',
     abertura,
-    municipio: d.estabelecimento?.cidade?.nome ?? null,
-    uf: d.estabelecimento?.estado?.sigla ?? null,
-    natureza: d.natureza_juridica?.descricao ?? null,
-    porte: d.porte?.descricao ?? null,
-    cnae: d.estabelecimento?.atividade_principal?.descricao ?? null,
-    email: d.estabelecimento?.email ?? null,
+    municipio: data.municipio ?? null,
+    uf: data.uf ?? null,
+    natureza: data.natureza_juridica ?? null,
+    porte: data.porte ?? null,
+    cnae: data.cnae_fiscal_descricao ?? null,
+    email: data.email ?? null,
   }
 }

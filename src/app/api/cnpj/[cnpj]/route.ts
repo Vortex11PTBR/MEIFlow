@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { lookupCNPJ } from '@/lib/cnpj'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(_req: NextRequest, { params }: { params: { cnpj: string } }) {
   try {
     const data = await lookupCNPJ(params.cnpj)

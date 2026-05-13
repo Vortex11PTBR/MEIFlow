@@ -50,8 +50,8 @@ const FEATURES = [
         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
       </svg>
     ),
-    title: 'Multi-tenant',
-    desc: 'Arquitetura profissional onde cada MEI tem seus dados completamente isolados com segurança garantida.',
+    title: 'Dados isolados por empresa',
+    desc: 'Cada MEI usa o próprio CNPJ, com dados totalmente separados e protegidos em um ambiente SaaS real.',
   },
   {
     icon: (
@@ -80,11 +80,10 @@ const TECH = [
 export default function HomePage() {
   return (
     <main className="max-w-6xl mx-auto px-6">
-      {/* hero */}
       <section className="py-24 text-center">
         <div className="inline-flex items-center gap-2 font-mono text-xs text-cyan-400 border border-cyan-400/25 bg-cyan-400/5 px-4 py-1.5 rounded-full mb-8">
           <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          Demo ao vivo — sem cadastro necessário
+          Cadastro grátis + demonstração ao vivo
         </div>
         <h1 className="text-4xl sm:text-6xl font-bold leading-tight mb-6">
           Gestão financeira{' '}
@@ -98,23 +97,20 @@ export default function HomePage() {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <a
-            href="/demo"
+            href="/auth/cadastro"
             className="bg-cyan-400 text-bg font-mono font-bold px-8 py-4 rounded-xl text-sm hover:shadow-[0_0_32px_rgba(0,212,255,0.4)] transition-all"
           >
-            Ver dashboard demo →
+            Criar conta grátis →
           </a>
           <a
-            href="https://github.com/Vortex11PTBR/MEIFlow"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/demo"
             className="border border-white/[0.12] text-slate-300 font-mono text-sm px-8 py-4 rounded-xl hover:border-white/30 transition-all"
           >
-            GitHub — código aberto
+            Ver demonstração
           </a>
         </div>
       </section>
 
-      {/* features */}
       <section className="py-12">
         <p className="font-mono text-[11px] text-slate-500 uppercase tracking-widest text-center mb-10">
           O que o MEIFlow resolve
@@ -133,7 +129,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* live CNPJ lookup */}
       <section className="py-12">
         <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-8">
           <div className="mb-6 text-center">
@@ -147,7 +142,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* stack */}
       <section className="py-12 pb-4">
         <p className="font-mono text-[11px] text-slate-500 uppercase tracking-widest text-center mb-8">Stack técnica</p>
         <div className="flex flex-wrap gap-2 justify-center">
@@ -162,19 +156,26 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="py-16 text-center">
         <div className="bg-gradient-to-r from-cyan-400/5 via-purple-400/5 to-cyan-400/5 border border-cyan-400/10 rounded-2xl p-10">
-          <h2 className="text-2xl font-bold text-slate-100 mb-3">Dashboard com dados reais</h2>
+          <h2 className="text-2xl font-bold text-slate-100 mb-3">Pronto para usar com seu próprio CNPJ</h2>
           <p className="text-slate-400 mb-6">
-            5 meses de lançamentos, categorização por IA, limite MEI e alerta de DAS. Tudo funcionando.
+            Crie sua conta, valide sua empresa e comece com um painel financeiro isolado para o seu negócio.
           </p>
-          <a
-            href="/demo"
-            className="inline-block bg-cyan-400 text-bg font-mono font-bold px-8 py-4 rounded-xl text-sm hover:shadow-[0_0_32px_rgba(0,212,255,0.4)] transition-all"
-          >
-            Abrir demo →
-          </a>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <a
+              href="/auth/cadastro"
+              className="inline-block bg-cyan-400 text-bg font-mono font-bold px-8 py-4 rounded-xl text-sm hover:shadow-[0_0_32px_rgba(0,212,255,0.4)] transition-all"
+            >
+              Criar conta grátis →
+            </a>
+            <a
+              href="/demo"
+              className="inline-block border border-white/[0.12] text-slate-300 font-mono text-sm px-8 py-4 rounded-xl hover:border-white/30 transition-all"
+            >
+              Ver demonstração
+            </a>
+          </div>
         </div>
       </section>
       <footer className="border-t border-slate-200 dark:border-slate-800 py-8 mt-20">

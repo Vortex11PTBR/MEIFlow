@@ -1,12 +1,14 @@
 export const dynamic = 'force-dynamic'
 
-import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
-import { prisma } from '@/lib/db'
-import { categorizeTransaction } from '@/lib/categorize'
-import { DEMO_TENANT_CNPJ } from '@/lib/utils'
 import { TransactionType } from '@prisma/client'
 import { revalidateTag } from 'next/cache'
+import { getServerSession } from 'next-auth'
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { authOptions } from '@/lib/auth'
+import { categorizeTransaction } from '@/lib/categorize'
+import { prisma } from '@/lib/db'
+import { DEMO_TENANT_CNPJ } from '@/lib/utils'
 
 const CreateSchema = z.object({
   description: z.string().min(1).max(255),
@@ -46,7 +48,15 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 })
 
   const { description, amount, type, date, clientId, category: userCategory, notes } = parsed.data
-  const tenant = await prisma.tenant.findUnique({ where: { cnpj: DEMO_TENANT_CNPJ } })
+  const session = await getServerSession(authOptions)
+
+  let tenant
+  if (session?.user?.tenantId) {
+    tenant = await prisma.tenant.findUnique({ where: { id: session.user.tenantId } })
+  } else {
+    tenant = await prisma.tenant.findUnique({ where: { cnpj: DEMO_TENANT_CNPJ } })
+  }
+
   if (!tenant) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 })
 
   const category = userCategory ?? (await categorizeTransaction(description))
@@ -68,4 +78,3 @@ export async function POST(req: NextRequest) {
   revalidateTag('dashboard')
   return NextResponse.json(tx, { status: 201 })
 }
-

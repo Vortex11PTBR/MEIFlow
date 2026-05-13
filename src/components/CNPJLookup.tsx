@@ -123,7 +123,7 @@ export function CNPJLookup() {
           </div>
           <div className="mt-4 p-3 bg-green-400/5 border border-green-400/20 rounded-lg">
             <p className="font-mono text-[10px] text-green-400">
-              ✓ Dados importados da API pública — publica.cnpj.ws · Receita Federal do Brasil
+              ✓ Dados importados da API pública da Receita Federal
             </p>
           </div>
         </div>

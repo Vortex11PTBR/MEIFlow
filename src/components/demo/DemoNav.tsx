@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 
 const NAV_ITEMS = [
   {
-    href: '/demo',
+    slug: '',
     label: 'Painel',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -17,7 +17,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: '/demo/lancamentos',
+    slug: '/lancamentos',
     label: 'Lançamentos',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -31,7 +31,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: '/demo/clientes',
+    slug: '/clientes',
     label: 'Clientes',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -43,7 +43,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: '/demo/fluxo-de-caixa',
+    slug: '/fluxo-de-caixa',
     label: 'Fluxo de Caixa',
     mobileHidden: true,
     icon: (
@@ -54,7 +54,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: '/demo/impostos',
+    slug: '/impostos',
     label: 'Impostos',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -67,7 +67,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: '/demo/relatorios',
+    slug: '/relatorios',
     label: 'Relatórios',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -79,17 +79,16 @@ const NAV_ITEMS = [
   },
 ]
 
-const MOBILE_NAV_ITEMS = NAV_ITEMS.filter(item => !item.mobileHidden)
-
-export function DemoNav({ mobile = false }: { mobile?: boolean }) {
+export function DemoNav({ basePath = '/demo', mobile = false }: { basePath?: string; mobile?: boolean }) {
   const pathname = usePathname()
-  const items = mobile ? MOBILE_NAV_ITEMS : NAV_ITEMS
+  const items = NAV_ITEMS.map(item => ({ ...item, href: `${basePath}${item.slug}` }))
+  const visibleItems = items.filter(item => (mobile ? !item.mobileHidden : true))
 
   if (mobile) {
     return (
       <div className="flex items-center justify-around h-16 px-4">
-        {items.map(item => {
-          const isActive = item.href === '/demo' ? pathname === '/demo' : pathname.startsWith(item.href)
+        {visibleItems.map(item => {
+          const isActive = item.href === basePath ? pathname === basePath : pathname.startsWith(item.href)
           return (
             <Link
               key={item.href}
@@ -109,8 +108,8 @@ export function DemoNav({ mobile = false }: { mobile?: boolean }) {
 
   return (
     <nav className="flex flex-col gap-0.5 px-3">
-      {items.map(item => {
-        const isActive = item.href === '/demo' ? pathname === '/demo' : pathname.startsWith(item.href)
+      {visibleItems.map(item => {
+        const isActive = item.href === basePath ? pathname === basePath : pathname.startsWith(item.href)
         return (
           <Link
             key={item.href}

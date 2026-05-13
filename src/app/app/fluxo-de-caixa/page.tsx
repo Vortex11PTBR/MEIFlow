@@ -1,21 +1,25 @@
+import { getServerSession } from 'next-auth'
+import { redirect } from 'next/navigation'
 import { RevenueChart } from '@/components/dashboard/RevenueChart'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 import { getDashboardData } from '@/lib/dashboard'
-import { DEMO_TENANT_CNPJ, formatCurrency } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 
 export const revalidate = 30
 
 export default async function FluxoCaixaPage() {
-  let data
-  try {
-    data = await getDashboardData(DEMO_TENANT_CNPJ)
-  } catch {
-    return (
-      <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-        <p className="text-slate-500 dark:text-slate-400 text-sm">Banco de dados não configurado.</p>
-      </div>
-    )
-  }
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.tenantId) redirect('/onboarding')
 
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: session.user.tenantId },
+    select: { cnpj: true },
+  })
+
+  if (!tenant) redirect('/onboarding')
+
+  const data = await getDashboardData(tenant.cnpj)
   const saldo = data.monthIncome - data.monthExpense
   const projecaoAnual = saldo * 12
 
@@ -27,11 +31,7 @@ export default async function FluxoCaixaPage() {
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Acompanhe entradas e saídas do seu negócio</p>
       </div>
 
-      <div className={`rounded-2xl p-6 border shadow-sm animate-fade-in-up ${
-        saldo >= 0
-          ? 'bg-green-50 dark:bg-green-400/5 border-green-200 dark:border-green-400/20'
-          : 'bg-red-50 dark:bg-red-400/5 border-red-200 dark:border-red-400/20'
-      }`}>
+      <div className={`rounded-2xl p-6 border shadow-sm animate-fade-in-up ${saldo >= 0 ? 'bg-green-50 dark:bg-green-400/5 border-green-200 dark:border-green-400/20' : 'bg-red-50 dark:bg-red-400/5 border-red-200 dark:border-red-400/20'}`}>
         <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Resultado do Mês Atual</p>
         <p className={`font-mono text-4xl font-bold tabular-nums ${saldo >= 0 ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
           {saldo >= 0 ? '+' : ''}{formatCurrency(saldo)}

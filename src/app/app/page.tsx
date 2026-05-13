@@ -1,3 +1,5 @@
+import { getServerSession } from 'next-auth'
+import { redirect } from 'next/navigation'
 import { AddTransaction } from '@/components/AddTransaction'
 import { ExportButton } from '@/components/ExportButton'
 import { DASCard } from '@/components/dashboard/DASCard'
@@ -5,25 +7,25 @@ import { ExpenseChart } from '@/components/dashboard/ExpenseChart'
 import { LimitBar } from '@/components/dashboard/LimitBar'
 import { RevenueChart } from '@/components/dashboard/RevenueChart'
 import { TransactionList } from '@/components/dashboard/TransactionList'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 import { getDashboardData } from '@/lib/dashboard'
-import { DEMO_TENANT_CNPJ, formatCurrency } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 
 export const revalidate = 30
 
-export default async function DemoPage() {
-  let data
-  try {
-    data = await getDashboardData(DEMO_TENANT_CNPJ)
-  } catch {
-    return (
-      <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-        <p className="text-slate-500 dark:text-slate-400 text-sm">Banco de dados não configurado.</p>
-        <p className="text-xs text-slate-400 mt-2">
-          Execute: <code className="text-blue-600 dark:text-blue-400 font-mono">npm run db:push && npm run db:seed</code>
-        </p>
-      </div>
-    )
-  }
+export default async function AppPage() {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.tenantId) redirect('/onboarding')
+
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: session.user.tenantId },
+    select: { cnpj: true },
+  })
+
+  if (!tenant) redirect('/onboarding')
+
+  const data = await getDashboardData(tenant.cnpj)
 
   const kpis = [
     {
@@ -126,12 +128,7 @@ export default async function DemoPage() {
       </div>
 
       <div className="p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
-        <p className="text-xs text-slate-400 text-center">
-          Dados de demonstração · Next.js 14 · Prisma · Neon · Claude AI ·{' '}
-          <a href="https://github.com/Vortex11PTBR/MEIFlow" className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
-            github.com/Vortex11PTBR/MEIFlow
-          </a>
-        </p>
+        <p className="text-xs text-slate-400 text-center">Seus dados privados · Next.js 14 · Prisma · Neon · Claude AI</p>
       </div>
     </div>
   )

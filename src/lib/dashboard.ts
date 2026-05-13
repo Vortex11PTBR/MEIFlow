@@ -1,7 +1,7 @@
+import { TransactionType } from '@prisma/client'
 import { unstable_cache } from 'next/cache'
 import { prisma } from './db'
-import { MEI_ANNUAL_LIMIT, DEMO_TENANT_CNPJ } from './utils'
-import { TransactionType } from '@prisma/client'
+import { MEI_ANNUAL_LIMIT } from './utils'
 
 export interface DashboardData {
   tenantName: string
@@ -28,79 +28,64 @@ export interface DashboardData {
   }[]
 }
 
-async function _getDashboardData(): Promise<DashboardData> {
+async function _getDashboardData(cnpj: string): Promise<DashboardData> {
   const now = new Date()
   const year = now.getFullYear()
   const monthStart = new Date(year, now.getMonth(), 1)
   const monthEnd = new Date(year, now.getMonth() + 1, 0, 23, 59, 59)
   const yearStart = new Date(year, 0, 1)
-  const breakdownStart = new Date(year - 1, now.getMonth() + 1, 1) // 13 months back
+  const breakdownStart = new Date(year - 1, now.getMonth() + 1, 1)
   const weekStart = new Date(year, now.getMonth(), now.getDate() - 6)
   weekStart.setHours(0, 0, 0, 0)
 
-  // All queries run in parallel — single DB round trip
-  const [
-    tenant,
-    monthByTypeAndCategory, // groupBy(type, category) in month → derives income, expense, categories
-    yearIncomeAgg,
-    monthlyRaw,             // raw SQL: DATE_TRUNC month + type
-    weeklyRaw,              // raw SQL: DATE_TRUNC day + type
-    recentTx,
-    activeClients,
-  ] = await Promise.all([
+  const [tenant, monthByTypeAndCategory, yearIncomeAgg, monthlyRaw, weeklyRaw, recentTx, activeClients] = await Promise.all([
     prisma.tenant.findUnique({
-      where: { cnpj: DEMO_TENANT_CNPJ },
+      where: { cnpj },
       select: { id: true, razaoSocial: true, nomeFantasia: true, cnpj: true },
     }),
-    // One groupBy replaces 3 queries (monthIncome, monthExpense, expenseCategories)
     prisma.transaction.groupBy({
       by: ['type', 'category'],
-      where: { tenant: { cnpj: DEMO_TENANT_CNPJ }, date: { gte: monthStart, lte: monthEnd } },
+      where: { tenant: { cnpj }, date: { gte: monthStart, lte: monthEnd } },
       _sum: { amount: true },
     }),
-    // Year income aggregate (DB-level SUM, no rows transferred)
     prisma.transaction.aggregate({
-      where: { tenant: { cnpj: DEMO_TENANT_CNPJ }, date: { gte: yearStart }, type: TransactionType.INCOME },
+      where: { tenant: { cnpj }, date: { gte: yearStart }, type: TransactionType.INCOME },
       _sum: { amount: true },
     }),
-    // Monthly breakdown — DB GROUP BY month+type, returns max 26 rows instead of all transactions
     prisma.$queryRaw<{ month: Date; type: string; total: number }[]>`
       SELECT
         DATE_TRUNC('month', date) AS month,
         type,
         SUM(amount)::float8       AS total
       FROM transactions
-      WHERE "tenantId" = (SELECT id FROM tenants WHERE cnpj = ${DEMO_TENANT_CNPJ})
+      WHERE "tenantId" = (SELECT id FROM tenants WHERE cnpj = ${cnpj})
         AND date >= ${breakdownStart}
         AND date <= ${monthEnd}
       GROUP BY DATE_TRUNC('month', date), type
       ORDER BY month
     `,
-    // Weekly breakdown — DB GROUP BY day+type, returns max 14 rows
     prisma.$queryRaw<{ day: Date; type: string; total: number }[]>`
       SELECT
         DATE_TRUNC('day', date) AS day,
         type,
         SUM(amount)::float8     AS total
       FROM transactions
-      WHERE "tenantId" = (SELECT id FROM tenants WHERE cnpj = ${DEMO_TENANT_CNPJ})
+      WHERE "tenantId" = (SELECT id FROM tenants WHERE cnpj = ${cnpj})
         AND date >= ${weekStart}
       GROUP BY DATE_TRUNC('day', date), type
       ORDER BY day
     `,
-    // Recent 10 transactions — only needed fields
     prisma.transaction.findMany({
-      where: { tenant: { cnpj: DEMO_TENANT_CNPJ } },
+      where: { tenant: { cnpj } },
       orderBy: { date: 'desc' },
       take: 10,
       select: { id: true, description: true, amount: true, type: true, category: true, date: true, aiCategorized: true, notes: true },
     }),
-    prisma.client.count({ where: { tenant: { cnpj: DEMO_TENANT_CNPJ } } }),
+    prisma.client.count({ where: { tenant: { cnpj } } }),
   ])
 
-  if (!tenant) throw new Error('Demo tenant not found — run: npm run db:seed')
+  if (!tenant) throw new Error('Tenant not found')
 
-  // Derive month income, expense, and categories from the single groupBy result
   let monthIncome = 0
   let monthExpense = 0
   const expenseCategories: Record<string, number> = {}
@@ -117,7 +102,6 @@ async function _getDashboardData(): Promise<DashboardData> {
 
   const yearIncome = Number(yearIncomeAgg._sum.amount ?? 0)
 
-  // Build 13-month breakdown from raw SQL results
   const monthlyBreakdown: { month: string; label: string; income: number; expense: number }[] = []
   for (let i = 12; i >= 0; i--) {
     const d = new Date(year, now.getMonth() - i, 1)
@@ -138,7 +122,6 @@ async function _getDashboardData(): Promise<DashboardData> {
     })
   }
 
-  // Build 7-day breakdown from raw SQL results
   const weeklyBreakdown: { day: string; income: number; expense: number }[] = []
   for (let i = 6; i >= 0; i--) {
     const d = new Date(year, now.getMonth(), now.getDate() - i)
@@ -178,8 +161,9 @@ async function _getDashboardData(): Promise<DashboardData> {
   }
 }
 
-export const getDashboardData = unstable_cache(
-  _getDashboardData,
-  ['dashboard-data'],
-  { revalidate: 30, tags: ['dashboard'] }
-)
+export function getDashboardData(cnpj: string): Promise<DashboardData> {
+  return unstable_cache(() => _getDashboardData(cnpj), [`dashboard-data-${cnpj}`], {
+    revalidate: 30,
+    tags: ['dashboard'],
+  })()
+}
