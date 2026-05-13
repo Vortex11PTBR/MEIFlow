@@ -79,7 +79,7 @@ const TECH = [
 
 export default function HomePage() {
   return (
-    <div className="bg-slate-950">
+    <div className="bg-slate-800 dark:bg-slate-950 text-slate-100">
     <main className="max-w-6xl mx-auto px-6">
       <section className="py-24 text-center">
         <div className="inline-flex items-center gap-2 font-mono text-xs text-cyan-400 border border-cyan-400/25 bg-cyan-400/5 px-4 py-1.5 rounded-full mb-8">
