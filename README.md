@@ -1,110 +1,124 @@
-# MEIFlow 🧾
+# MEIFlow
 
-> SaaS de gestão financeira para Microempreendedores Individuais (MEI) — com categorização por IA, integração com a Receita Federal e alertas de DAS automáticos.
+> SaaS de gestão financeira construído do zero para os 15 milhões de MEIs do Brasil.
 
-**Demo ao vivo →** _[em breve após deploy]_
+[![Deploy](https://img.shields.io/badge/deploy-vercel-black?logo=vercel)](https://mei-flow-eight.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript)](https://typescriptlang.org)
+[![Prisma](https://img.shields.io/badge/Prisma-PostgreSQL-2D3748?logo=prisma)](https://prisma.io)
+
+**🚀 [Demo ao vivo → mei-flow-eight.vercel.app](https://mei-flow-eight.vercel.app)**
 
 ---
 
-## Funcionalidades
+## O Problema
 
-- **Categorização automática por IA** — Claude (Anthropic) categoriza cada lançamento em 12 categorias com fallback heurístico
-- **Alerta de DAS** — notificação por e-mail 5 dias antes do vencimento via Vercel Cron + Resend
-- **API da Receita Federal** — consulta de CNPJ em tempo real (publica.cnpj.ws)
-- **Controle de limite MEI** — alerta progressivo ao atingir R$81.000/ano
-- **Dashboard interativo** — gráficos de receita vs despesa, categorias, transações recentes
-- **Multi-tenant** — cada MEI tem dados completamente isolados
-- **Demo público** — tenant demo pré-populado com 28 transações, sem cadastro
+São **15 milhões de MEIs no Brasil**. A esmagadora maioria controla receitas, despesas e impostos em caderno, WhatsApp ou planilha. Os sistemas existentes são caros demais, ou tão complexos que assustam quem nunca teve contador.
+
+**Não existe nada simples, bonito e feito especificamente para a realidade de quem trabalha sozinho.**
+
+MEIFlow resolve isso.
+
+---
+
+![Hero](docs/hero.png)
+
+---
+
+## O que foi construído
+
+Uma aplicação **multi-tenant real** — cada MEI tem dados completamente isolados, identificados pelo próprio CNPJ. O sistema é operacional em produção com usuários reais.
+
+![Features](docs/features.png)
+
+### Funcionalidades em produção
+
+- **Categorização por IA** — cada lançamento é categorizado automaticamente pelo Claude (Anthropic). O usuário digita a descrição; a IA faz o resto, com fallback heurístico sem custo de API
+- **Alerta de DAS automático** — e-mail enviado 5 dias antes do vencimento via Vercel Cron Jobs + Resend. Nunca mais pagar multa
+- **API Receita Federal ao vivo** — consulta de CNPJ em tempo real direto da base pública. Onboarding em segundos
+- **Controle do limite anual** — monitoramento do teto de R$81.000 com barra de progresso e alertas progressivos
+- **Relatórios mensais** — evolução mês a mês, tendência de receita, distribuição por categoria, melhor mês
+- **Autenticação completa** — Google OAuth + e-mail/senha, sessões JWT, middleware de rota por tenant
+
+---
+
+## Dashboard
+
+![Dashboard](docs/dashboard.png)
+
+KPIs em tempo real: receita do mês, despesas, lucro líquido, clientes ativos, limite MEI e próximo vencimento do DAS — tudo em uma tela.
+
+## Lançamentos com IA
+
+![Lançamentos](docs/lancamentos.png)
+
+Formulário com sugestão de categoria por IA. Histórico filtrável por semana, mês e ano. Exportação CSV nativa.
+
+## Gestão de Clientes
+
+![Clientes](docs/clientes.png)
+
+Cadastro de clientes com envio automático de e-mail de boas-vindas via Resend. Domínio verificado, remetente profissional.
+
+## Fluxo de Caixa
+
+![Fluxo de Caixa](docs/fluxo.png)
+
+Projeção anual calculada em tempo real. Gráfico de entradas vs saídas dos últimos 5 meses.
+
+## Central de Impostos
+
+![Impostos](docs/impostos.png)
+
+Breakdown completo do DAS 2025 com countdown do vencimento. Links diretos para o Portal do Empreendedor, PGMEI e Meu INSS.
+
+## Relatórios
+
+![Relatórios](docs/relatorios.png)
+
+Tendência de receita, distribuição por categoria e evolução mensal completa — sem planilha, sem contador.
+
+---
+
+## Arquitetura
+
+```
+[Usuário] ──► [Next.js App Router] ──► [Middleware JWT + tenant check]
+                      │
+          ┌───────────┼───────────────────┐
+          │           │                   │
+    [Dashboard]  [API Routes]      [Server Pages]
+          │           │                   │
+          └───────────▼───────────────────┘
+                [Prisma ORM]
+                      │
+              [PostgreSQL / Neon]
+                      
+[Vercel Cron] ──► [/api/cron/das] ──► [Resend] ──► [E-mail MEI]
+[Formulário]  ──► [/api/categorize] ──► [Claude API] ──► [categoria]
+[Onboarding]  ──► [/api/cnpj] ──► [BrasilAPI / Receita Federal]
+```
 
 ## Stack
 
 | Camada | Tecnologia |
-|---|---|
-| Frontend | Next.js 14 App Router + TypeScript strict + Tailwind CSS |
+|--------|-----------|
+| Frontend | Next.js 14 App Router · TypeScript strict · Tailwind CSS |
+| Auth | NextAuth.js · Google OAuth · JWT |
 | Backend | Next.js API Routes |
-| Banco de dados | PostgreSQL via Neon (free tier) + Prisma ORM |
-| IA | Claude claude-3-haiku (Anthropic) |
-| E-mail | Resend |
+| Banco de dados | PostgreSQL · Neon serverless · Prisma ORM |
+| IA | Claude 3 Haiku (Anthropic) |
+| E-mail | Resend · domínio verificado |
 | Cron | Vercel Cron Jobs |
-| CI/CD | GitHub Actions + Vercel |
+| Deploy | Vercel (frontend + API) · Neon (banco) |
 
-## Deploy gratuito
+---
 
-### 1. Banco de dados — Neon
-1. Crie conta em [neon.tech](https://neon.tech) → novo projeto → copie a connection string
-2. A connection string tem formato: `postgresql://user:pass@host/db?sslmode=require`
+## Cadastro
 
-### 2. Vercel
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Vortex11PTBR/MEIFlow)
-
-Configure as variáveis de ambiente no painel da Vercel:
-
-```env
-DATABASE_URL=postgresql://...    # Neon connection string (com pgbouncer=true para prod)
-DIRECT_URL=postgresql://...      # Neon direct connection (para migrations)
-ANTHROPIC_API_KEY=sk-ant-...     # opcional — fallback heurístico funciona sem
-RESEND_API_KEY=re_...            # para alertas de DAS por e-mail
-CRON_SECRET=um-segredo-qualquer  # protege o endpoint /api/cron/das
-```
-
-### 3. Executar migrations e seed
-
-No terminal da Vercel ou localmente com as variáveis configuradas:
-```bash
-npm run db:push    # aplica schema
-npm run db:seed    # popula tenant demo
-```
-
-## Desenvolvimento local
-
-```bash
-git clone https://github.com/Vortex11PTBR/MEIFlow
-cd MEIFlow
-npm install
-
-# Suba o PostgreSQL com Docker
-docker compose up -d
-
-# Configure variáveis
-cp .env.example .env.local
-
-# Migrations + seed
-npm run db:push
-npm run db:seed
-
-# Dev server
-npm run dev
-```
-
-Abra [http://localhost:3000](http://localhost:3000)
-
-## Estrutura
-
-```
-src/
-  app/
-    api/
-      dashboard/       # KPIs e dados para o dashboard
-      cnpj/[cnpj]/     # Proxy para API da Receita Federal
-      transactions/    # CRUD de lançamentos
-      categorize/      # Categorização por IA
-      cron/das/        # Envio de alertas de DAS
-    demo/              # Dashboard demo (Server Component)
-    page.tsx           # Landing page
-  components/
-    dashboard/         # KPIRow, RevenueChart, ExpenseChart, LimitBar, DASCard, TransactionList
-    CNPJLookup.tsx     # Consulta interativa de CNPJ
-    AddTransaction.tsx # Formulário com sugestão de categoria por IA
-  lib/
-    categorize.ts      # Claude API + fallback heurístico
-    cnpj.ts            # Wrapper da API da Receita Federal
-    utils.ts           # Utilitários financeiros (limite MEI, DAS countdown)
-    db.ts              # Prisma singleton
-prisma/
-  schema.prisma        # Modelos: Tenant, Transaction, Client
-  seed.ts              # Dados demo (28 transações, 5 meses)
-```
+![Cadastro](docs/cadastro.png)
 
 ---
 
 Construído por [João Lacerda](https://joaolacerda.dev) · 15 milhões de MEIs merecem ferramentas melhores.
+
