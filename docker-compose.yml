@@ -1,6 +1,23 @@
 services:
+
+  # ── App Next.js ───────────────────────────────────────────────────────────
+  app:
+    build: .
+    container_name: meiflow_app
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://meiflow:meiflow@postgres:5432/meiflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── PostgreSQL ────────────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
+    container_name: meiflow_db
     environment:
       POSTGRES_DB: meiflow
       POSTGRES_USER: meiflow
@@ -14,6 +31,15 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+
+  # ── Redis (BullMQ — filas assíncronas) ───────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: meiflow_redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
 
 volumes:
   postgres_data:
