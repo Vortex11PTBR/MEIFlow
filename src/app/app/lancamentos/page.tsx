@@ -6,7 +6,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { formatCurrency } from '@/lib/utils'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 30
 
 const CATEGORY_COLORS: Record<string, string> = {
   Serviços: 'text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-400/30 bg-blue-50 dark:bg-blue-400/10',

@@ -15,8 +15,8 @@ const taxItems: TaxItem[] = [
   {
     name: 'INSS (Previdência Social)',
     desc: 'Contribuição para aposentadoria e benefícios do INSS',
-    value: 'R$ 65,00/mês',
-    info: '5% sobre o salário mínimo vigente',
+    value: 'R$ 75,90/mês',
+    info: '5% sobre o salário mínimo 2025 (R$ 1.518,00)',
   },
   {
     name: 'ICMS (Comércio/Indústria)',

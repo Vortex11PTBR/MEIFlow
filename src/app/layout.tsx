@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google'
 import { SessionProvider } from '@/components/SessionProvider'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { NavActions } from '@/components/NavActions'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
@@ -38,12 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <a href="/demo" className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium">
                     Demo
                   </a>
-                  <a href="/auth/entrar" className="text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium">
-                    Entrar
-                  </a>
-                  <a href="/auth/cadastro" className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-                    Criar conta
-                  </a>
+                  <NavActions />
                   <ThemeToggle />
                 </div>
               </div>

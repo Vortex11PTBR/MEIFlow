@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 import { TransactionType } from '@prisma/client'
 import { revalidateTag } from 'next/cache'
 import { getServerSession } from 'next-auth'
@@ -25,7 +23,13 @@ export async function GET(req: NextRequest) {
   const page = Number(searchParams.get('page') ?? '1')
   const limit = Math.min(Number(searchParams.get('limit') ?? '20'), 50)
 
-  const tenant = await prisma.tenant.findUnique({ where: { cnpj: DEMO_TENANT_CNPJ } })
+  const session = await getServerSession(authOptions)
+  let tenant
+  if (session?.user?.tenantId) {
+    tenant = await prisma.tenant.findUnique({ where: { id: session.user.tenantId } })
+  } else {
+    tenant = await prisma.tenant.findUnique({ where: { cnpj: DEMO_TENANT_CNPJ } })
+  }
   if (!tenant) return NextResponse.json({ error: 'Tenant not found' }, { status: 404 })
 
   const [total, transactions] = await Promise.all([
